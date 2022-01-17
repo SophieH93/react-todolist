@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Todoitem from "./Todoitem";
 import styled from "styled-components";
 
@@ -6,17 +6,50 @@ const TodoList = ({ name, color, icon }) => {
   const [todo, setTodo] = useState("");
   const [todos, setTodos] = useState([]);
 
-  const addButtonHandler = () => {
-    if (todo.length > 0) {
-      setTodos([
-        {
-          id: todos.length,
-          title: todo,
-          completed: false,
+  const baseUrl = `https://api.airtable.com/v0/appgJU2WFX8KCLN27/${name}`;
+
+  const getTodos = async () => {
+    try {
+      const todoData = await fetch(baseUrl, {
+        method: "get",
+        headers: {
+          Authorization: "Bearer keyE6a6UUalJNNNBb",
         },
-        ...todos,
-      ]);
+      });
+      const todoJson = await todoData.json();
+      setTodos(todoJson.records);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  console.log(todos);
+
+  useEffect(() => {
+    getTodos();
+  }, [todo]);
+
+  const addButtonHandler = async () => {
+    try {
+      await fetch(baseUrl, {
+        method: "post",
+        headers: {
+          Authorization: "Bearer keyE6a6UUalJNNNBb",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          records: [
+            {
+              fields: {
+                Title: todo,
+                Completed: false,
+              },
+            },
+          ],
+        }),
+      });
       setTodo("");
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -34,9 +67,10 @@ const TodoList = ({ name, color, icon }) => {
         <Todoitem
           key={index}
           todo={todo}
-          todos={todos}
-          setTodos={setTodos}
           color={color}
+          baseUrl={baseUrl}
+          name={name}
+          getTodos={getTodos}
         />
       ))}
     </Wrapper>
