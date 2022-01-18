@@ -1,5 +1,7 @@
 # TODO LIST
 
+![](mockup.png)
+
 ## Technologies
 
 - React
